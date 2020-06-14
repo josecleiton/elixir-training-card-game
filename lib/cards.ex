@@ -55,12 +55,31 @@ defmodule Cards do
     Enum.member?(deck, card)
   end
 
-  @spec deal(deck, number) :: hand
+  @spec deal(deck, number) :: {hand, deck}
   def deal(deck, hand_size) do
     if hand_size <= 0 do
       raise "Hand size should be greater then 0"
     end
 
-    elem(Enum.split(deck, hand_size), 0)
+    Enum.split(deck, hand_size)
+  end
+
+  @spec save(deck, charlist) :: :ok
+  def save(deck, filename) do
+    content = :erlang.term_to_binary(deck)
+    File.write(filename, content)
+  end
+
+  @spec load(charlist) :: deck
+  def load(filename) do
+    case File.read(filename) do
+      {:ok, content} -> :erlang.binary_to_term(content)
+      {:error, _reason} -> raise "File.read failed"
+    end
+  end
+
+  @spec create_hand(number) :: hand
+  def create_hand(hand_size) do
+    Cards.create_deck() |> Cards.shuffle() |> Cards.deal(hand_size)
   end
 end
